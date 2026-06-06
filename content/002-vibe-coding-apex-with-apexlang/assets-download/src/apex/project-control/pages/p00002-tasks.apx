@@ -1,0 +1,316 @@
+page 2 (
+    name: Tasks
+    alias: TASKS
+    title: Tasks
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: mustNotBePublicUser
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    advanced {
+        reloadOnSubmit: always
+    }
+    help {
+        helpText: Use this report to review all project tasks. Filter, sort, and save custom report views. Click the edit icon on a row to open the task form and make changes.
+    }
+
+    region page-header (
+        name: Tasks
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: [
+                #DEFAULT#
+                t-BreadcrumbRegion--useBreadcrumbTitle
+            ]
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region tasks-report (
+        name: Tasks
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select t.pc_task_id,
+                       p.project_name,
+                       t.task_name,
+                       t.priority,
+                       o.owner_name,
+                       t.status,
+                       t.start_date,
+                       t.end_date,
+                       m.milestone_name,
+                       d.deliverable_name,
+                       t.notes
+                  from pc_tasks        t
+                  join pc_projects     p on p.pc_project_id      = t.pc_project_id
+                  left join pc_owners  o on o.pc_owner_id         = t.pc_owner_id
+                  left join pc_milestones  m on m.pc_milestone_id = t.pc_milestone_id
+                  left join pc_deliverables d on d.pc_deliverable_id = t.pc_deliverable_id
+                 order by p.project_name, t.priority, t.task_name
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        advanced {
+            htmlDomId: tasks-report
+        }
+        link {
+            linkColumn: customTarget
+            target: {
+                page: 3
+                items: {
+                    P3_PC_TASK_ID: #PC_TASK_ID#
+                }
+                clearCache: 3
+            }
+            linkIcon: <img src="#IMAGE_PREFIX#app_ui/img/icons/apex-edit-pencil.png" class="apex-edit-pencil" alt="Edit">
+        }
+        componentAppearance {
+            showNullValuesAs: -
+        }
+        pagination {
+            type: rowRangesXToY
+        }
+        messages {
+            whenNoDataFound: No tasks found.
+            whenMoreDataFound: This query returns more than #MAX_ROW_COUNT# rows, please filter your data to ensure complete results.
+        }
+        actionsMenu {
+            savePublicReport: true
+        }
+        download {
+            formats: [
+                csv
+                html
+            ]
+        }
+
+        column PC_TASK_ID (
+            type: hidden
+            heading {
+                heading: Task Id
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column PROJECT_NAME (
+            type: plainText
+            heading {
+                heading: Project
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column TASK_NAME (
+            type: plainText
+            heading {
+                heading: Task
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column PRIORITY (
+            type: plainText
+            heading {
+                heading: Priority
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column OWNER_NAME (
+            type: plainText
+            heading {
+                heading: Owner
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column STATUS (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column START_DATE (
+            type: plainText
+            heading {
+                heading: Start Date
+            }
+            layout {
+                sequence: 70
+            }
+            appearance {
+                formatMask: DD-MON-YYYY
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+        column END_DATE (
+            type: plainText
+            heading {
+                heading: End Date
+            }
+            layout {
+                sequence: 80
+            }
+            appearance {
+                formatMask: DD-MON-YYYY
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+        column MILESTONE_NAME (
+            type: plainText
+            heading {
+                heading: Milestone
+            }
+            layout {
+                sequence: 90
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column DELIVERABLE_NAME (
+            type: plainText
+            heading {
+                heading: Deliverable
+            }
+            layout {
+                sequence: 100
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column NOTES (
+            type: plainText
+            heading {
+                heading: Notes
+            }
+            layout {
+                sequence: 110
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+    )
+
+    button create-task (
+        buttonName: CREATE_TASK
+        label: Create Task
+        layout {
+            sequence: 10
+            region: @tasks-report
+            slot: RIGHT_OF_IR_SEARCH_BAR
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+            icon: fa-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 3
+                clearCache: 3
+            }
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction refresh-on-edit (
+        name: Refresh on Edit
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: region
+            region: @tasks-report
+        }
+
+        action refresh-tasks (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @tasks-report
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+)

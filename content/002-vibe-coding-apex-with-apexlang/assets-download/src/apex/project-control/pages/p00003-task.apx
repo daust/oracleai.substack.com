@@ -1,0 +1,589 @@
+page 3 (
+    name: Task
+    alias: TASK
+    title: Task
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/drawer
+        templateOptions: [
+            #DEFAULT#
+            js-dialog-class-t-Drawer--pullOutEnd
+        ]
+    }
+    dialog {
+        chained: false
+    }
+    security {
+        authorizationScheme: mustNotBePublicUser
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    help {
+        helpText: Use this form to create a new task or update an existing one. Complete all required fields and choose Save to record your changes.
+    }
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: REGION_POSITION_03
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+        settings {
+            outputAs: text
+        }
+    )
+
+    region form (
+        name: Task
+        type: form
+        source {
+            location: localDatabase
+            tableName: PC_TASKS
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+        }
+    )
+
+    pageItem P3_PC_TASK_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @form
+            slot: regionBody
+        }
+        source {
+            formRegion: @form
+            column: PC_TASK_ID
+            dataType: number
+            queryOnly: true
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P3_PC_PROJECT_ID (
+        type: selectList
+        label {
+            label: Project
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @pc-projects-lov
+            displayNullValue: true
+        }
+        layout {
+            sequence: 20
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @form
+            column: PC_PROJECT_ID
+            dataType: number
+        }
+        help {
+            inlineHelpText: Select the project
+            helpText: Choose the project this task belongs to. Every task must be associated with a project.
+        }
+    )
+
+    pageItem P3_TASK_NAME (
+        type: textField
+        label {
+            label: Task
+            alignment: left
+        }
+        layout {
+            sequence: 30
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+            width: 60
+        }
+        validation {
+            maxLength: 200
+            valueRequired: true
+        }
+        source {
+            formRegion: @form
+            column: TASK_NAME
+            dataType: varchar2
+        }
+        help {
+            inlineHelpText: Enter the task name
+            helpText: Provide a clear, concise name for the task. This value appears in reports and the navigation breadcrumb.
+        }
+    )
+
+    pageItem P3_PRIORITY (
+        type: selectList
+        label {
+            label: Priority
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @priority-lov
+            displayNullValue: true
+        }
+        layout {
+            sequence: 40
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        source {
+            formRegion: @form
+            column: PRIORITY
+            dataType: varchar2
+        }
+        help {
+            inlineHelpText: P0 = Critical, P3 = Low
+            helpText: Set the task priority. P0 is the highest (critical) and P3 is the lowest (low). Use priority to sort and filter tasks in the report.
+        }
+    )
+
+    pageItem P3_PC_OWNER_ID (
+        type: selectList
+        label {
+            label: Owner
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @pc-owners-lov
+            displayNullValue: true
+        }
+        layout {
+            sequence: 50
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        source {
+            formRegion: @form
+            column: PC_OWNER_ID
+            dataType: number
+        }
+        help {
+            inlineHelpText: Select the task owner
+            helpText: Choose the person responsible for completing this task. Leave blank if ownership is not yet assigned.
+        }
+    )
+
+    pageItem P3_STATUS (
+        type: selectList
+        label {
+            label: Status
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @status-lov
+            displayNullValue: true
+        }
+        layout {
+            sequence: 60
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        source {
+            formRegion: @form
+            column: STATUS
+            dataType: varchar2
+        }
+        help {
+            inlineHelpText: Current task status
+            helpText: Record the current execution state of the task. Update this field as the task progresses through the workflow.
+        }
+    )
+
+    pageItem P3_START_DATE (
+        type: datePicker
+        label {
+            label: Start Date
+            alignment: left
+        }
+        layout {
+            sequence: 70
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @form
+            column: START_DATE
+            dataType: date
+        }
+        help {
+            inlineHelpText: Enter the planned start date
+            helpText: Enter the planned start date for this task. Used for timeline reporting and milestone tracking.
+        }
+    )
+
+    pageItem P3_END_DATE (
+        type: datePicker
+        label {
+            label: End Date
+            alignment: left
+        }
+        layout {
+            sequence: 80
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 32
+        }
+        validation {
+            maxLength: 255
+        }
+        source {
+            formRegion: @form
+            column: END_DATE
+            dataType: date
+        }
+        help {
+            inlineHelpText: Enter the planned end date
+            helpText: Enter the planned completion date for this task. The report can highlight tasks where the end date has passed and status is not Complete.
+        }
+    )
+
+    pageItem P3_PC_MILESTONE_ID (
+        type: selectList
+        label {
+            label: Milestone
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @pc-milestones-lov
+            displayNullValue: true
+        }
+        layout {
+            sequence: 90
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        source {
+            formRegion: @form
+            column: PC_MILESTONE_ID
+            dataType: number
+        }
+        help {
+            inlineHelpText: Associate with a milestone
+            helpText: Optionally link this task to a project milestone. Milestones group tasks by delivery checkpoint.
+        }
+    )
+
+    pageItem P3_PC_DELIVERABLE_ID (
+        type: selectList
+        label {
+            label: Deliverable
+            alignment: left
+        }
+        lov {
+            type: sharedComponent
+            lov: @pc-deliverables-lov
+            displayNullValue: true
+        }
+        layout {
+            sequence: 100
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        source {
+            formRegion: @form
+            column: PC_DELIVERABLE_ID
+            dataType: number
+        }
+        help {
+            inlineHelpText: Expected output of this task
+            helpText: Select the deliverable that completing this task produces or contributes to.
+        }
+    )
+
+    pageItem P3_NOTES (
+        type: textarea
+        label {
+            label: Notes
+            alignment: left
+        }
+        layout {
+            sequence: 110
+            region: @form
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+            width: 60
+            height: 4
+        }
+        validation {
+            maxLength: 4000
+        }
+        source {
+            formRegion: @form
+            column: NOTES
+            dataType: varchar2
+        }
+        help {
+            inlineHelpText: Add supporting notes
+            helpText: Record any additional context, blockers, decisions, or follow-up actions relevant to this task.
+        }
+    )
+
+    pageItem P3_SUCCESS_MESSAGE (
+        type: hidden
+        layout {
+            sequence: 120
+            region: @form
+            slot: regionBody
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: Cancel
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: CLOSE
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    button create (
+        buttonName: CREATE
+        label: Create
+        layout {
+            sequence: 40
+            region: @buttons
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: insert
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P3_PC_TASK_ID
+        }
+    )
+
+    button delete (
+        buttonName: DELETE
+        label: Delete
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: DELETE
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: delete
+            requiresConfirmation: true
+        }
+        confirmation {
+            message: &APP_TEXT$DELETE_MSG!RAW.
+            style: danger
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P3_PC_TASK_ID
+        }
+    )
+
+    button apply-changes (
+        buttonName: APPLY-CHANGES
+        label: Apply Changes
+        layout {
+            sequence: 30
+            region: @buttons
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+            databaseAction: update
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P3_PC_TASK_ID
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: Cancel Dialog
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+
+    )
+
+    process set-success-message (
+        name: Set Success Message
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                :P3_SUCCESS_MESSAGE :=
+                    case :REQUEST
+                        when 'CREATE'        then 'Task was created successfully.'
+                        when 'APPLY-CHANGES' then 'Task was updated successfully.'
+                        when 'DELETE'        then 'Task was deleted successfully.'
+                        else null
+                    end;
+                ```
+        }
+        execution {
+            sequence: 5
+        }
+        serverSideCondition {
+            type: requestIsContainedInValue
+            value: CREATE,APPLY-CHANGES,DELETE
+        }
+    )
+
+    process initialize-form (
+        name: Initialize Form Task
+        type: formInitialization
+        formRegion: @form
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        advanced {
+            executionMappingIdentifier: 3030000000000001
+        }
+    )
+
+    process process-form (
+        name: Process Form Task
+        type: formAutoRowProcessing
+        formRegion: @form
+        execution {
+            sequence: 10
+        }
+        successMessage {
+            successMessage: &P3_SUCCESS_MESSAGE.
+        }
+        advanced {
+            executionMappingIdentifier: 3030000000000002
+        }
+    )
+
+    process close-dialog (
+        name: Close Dialog
+        type: closeDialog
+        execution {
+            sequence: 50
+        }
+        advanced {
+            executionMappingIdentifier: 3030000000000003
+        }
+        serverSideCondition {
+            type: requestIsContainedInValue
+            value: CREATE,APPLY-CHANGES,DELETE
+        }
+    )
+
+)

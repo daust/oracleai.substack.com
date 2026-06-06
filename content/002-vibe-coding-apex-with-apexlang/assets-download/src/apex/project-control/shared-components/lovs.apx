@@ -1,0 +1,137 @@
+lov boolean (
+    name: BOOLEAN
+    source {
+        location: staticValues
+    }
+
+    entry false (
+        sequence: 2
+        display: No
+        return: FALSE
+    )
+
+    entry true (
+        sequence: 1
+        display: Yes
+        return: TRUE
+    )
+
+)
+
+lov priority-lov (
+    name: PRIORITY_LOV
+    source {
+        location: staticValues
+    }
+
+    entry p0 (
+        sequence: 10
+        display: P0 - Critical
+        return: P0
+    )
+
+    entry p1 (
+        sequence: 20
+        display: P1 - High
+        return: P1
+    )
+
+    entry p2 (
+        sequence: 30
+        display: P2 - Medium
+        return: P2
+    )
+
+    entry p3 (
+        sequence: 40
+        display: P3 - Low
+        return: P3
+    )
+
+)
+
+lov status-lov (
+    name: STATUS_LOV
+    source {
+        location: staticValues
+    }
+
+    entry not-started (
+        sequence: 10
+        display: Not started
+        return: Not started
+    )
+
+    entry in-progress (
+        sequence: 20
+        display: In progress
+        return: In progress
+    )
+
+    entry blocked (
+        sequence: 30
+        display: Blocked
+        return: Blocked
+    )
+
+    entry on-hold (
+        sequence: 40
+        display: On hold
+        return: On hold
+    )
+
+    entry complete (
+        sequence: 50
+        display: Complete
+        return: Complete
+    )
+
+)
+
+lov pc-projects-lov (
+    name: PC_PROJECTS_LOV
+    source {
+        tableName: PC_PROJECTS
+    }
+    columnMapping {
+        return: PC_PROJECT_ID
+        display: PROJECT_NAME
+        defaultSort: PROJECT_NAME
+    }
+)
+
+lov pc-owners-lov (
+    name: PC_OWNERS_LOV
+    source {
+        tableName: PC_OWNERS
+    }
+    columnMapping {
+        return: PC_OWNER_ID
+        display: OWNER_NAME
+        defaultSort: OWNER_NAME
+    }
+)
+
+lov pc-milestones-lov (
+    name: PC_MILESTONES_LOV
+    source {
+        tableName: PC_MILESTONES
+    }
+    columnMapping {
+        return: PC_MILESTONE_ID
+        display: MILESTONE_NAME
+        defaultSort: MILESTONE_NAME
+    }
+)
+
+lov pc-deliverables-lov (
+    name: PC_DELIVERABLES_LOV
+    source {
+        tableName: PC_DELIVERABLES
+    }
+    columnMapping {
+        return: PC_DELIVERABLE_ID
+        display: DELIVERABLE_NAME
+        defaultSort: DELIVERABLE_NAME
+    }
+)

@@ -1,0 +1,4 @@
+-- Deinstall script for Project Control APEX application.
+-- Schema objects (tables, sequences, triggers, views) are managed
+-- separately via src/sql/demo/install.sql and are not dropped here.
+-- Add any APEX-application-specific cleanup statements below if needed.

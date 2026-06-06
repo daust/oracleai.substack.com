@@ -1,0 +1,127 @@
+list navigation-bar (
+    name: Navigation Bar
+
+    entry --- (
+        label: ---
+        layout {
+            sequence: 20
+            parentEntry: @app-user
+        }
+        link {
+            target: {
+                type: url
+                url: separator
+            }
+        }
+        serverSideCondition {
+            type: userIsAuthenticated
+        }
+    )
+
+    entry app-user (
+        label: &APP_USER.
+        icon {
+            imageIconCssClasses: fa-user
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+        userDefinedAttributes {
+            2: has-username
+        }
+    )
+
+    entry sign-out (
+        label: Sign Out
+        icon {
+            imageIconCssClasses: fa-sign-out
+        }
+        layout {
+            sequence: 30
+            parentEntry: @app-user
+        }
+        link {
+            target: {
+                type: url
+                url: &LOGOUT_URL.
+            }
+        }
+        serverSideCondition {
+            type: userIsAuthenticated
+        }
+    )
+
+)
+
+list navigation-menu (
+    name: Navigation Menu
+
+    entry dashboard (
+        label: Dashboard
+        icon {
+            imageIconCssClasses: fa-home
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 1
+            }
+        }
+    )
+
+    entry tasks (
+        label: Tasks
+        icon {
+            imageIconCssClasses: fa-tasks
+        }
+        layout {
+            sequence: 20
+        }
+        link {
+            target: {
+                page: 2
+            }
+        }
+    )
+
+    entry administration (
+        label: Administration
+        icon {
+            imageIconCssClasses: fa-cog
+        }
+        layout {
+            sequence: 30
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+    )
+
+    entry projects (
+        label: Projects
+        icon {
+            imageIconCssClasses: fa-folder
+        }
+        layout {
+            sequence: 40
+            parentEntry: @administration
+        }
+        link {
+            target: {
+                page: 4
+            }
+        }
+    )
+
+)

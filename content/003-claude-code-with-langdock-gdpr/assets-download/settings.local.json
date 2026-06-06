@@ -1,0 +1,7 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.langdock.com/anthropic/eu",
+    "ANTHROPIC_AUTH_TOKEN": "your-langdock-key",
+    "ANTHROPIC_MODEL": "claude-sonnet-4-6-default"
+  }
+}

@@ -1,0 +1,2 @@
+-- Deinstall script for Simple Starter application
+-- Add DROP statements here as database objects are created
