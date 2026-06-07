@@ -6,7 +6,7 @@ For a lot of European Oracle teams, AI-assisted development stalls on one senten
 
 After reading this, you'll be able to point Claude Code at an EU gateway on both Windows and macOS — and even let Claude Code configure itself.
 
-[IMAGE: diagram-01-eu-vs-us-routing.png — laptop → "EU endpoint (Langdock)" → Claude, contrasted with the default laptop → US endpoint]
+![EU vs US routing diagram — default path: laptop → Anthropic REST API (US); GDPR-compliant path: laptop → Langdock REST API → Azure Cloud EU → Claude (no data stored, no training)](assets-inline/diagram-01-eu-vs-us-routing.png)
 
 ---
 
@@ -44,7 +44,9 @@ A few things that matter for our purposes:
 
 - **EU data residency.** Processing happens in the EU. For Claude specifically, Langdock exposes an Anthropic-compatible endpoint hosted in Europe.
 - **GDPR-aligned.** They offer Data Processing Agreements, they don't train models on your data, and they document their subprocessors and security posture.
-- **Model-agnostic.** They front several model providers behind one API. We only care about the Claude side today.
+- **Model-agnostic.** They front several model providers behind one API — not just Claude, but also GPT-4, Gemini, Mistral, and others, all hosted in the EU. We only care about the Claude side today, but the breadth matters if your organization wants to evaluate or consolidate multiple models under one GDPR-compliant roof.
+
+![Langdock model selection — a range of EU-hosted models from multiple providers](assets-inline/screenshot-01-langdock-models.png)
 
 If you're the person who has to take this to security or legal, the one link to send them is their security page:
 
@@ -52,7 +54,8 @@ If you're the person who has to take this to security or legal, the one link to 
 
 That page covers certifications, hosting, data handling, and the subprocessor list — exactly the evidence a compliance review asks for.
 
-[IMAGE: screenshot-03-langdock-security-page.png — https://langdock.com/security in the browser, URL highlighted]
+![https://langdock.com/security in the browser](assets-inline/screenshot-03-langdock-security-page.png)
+
 
 ### But Langdock is just *one* option
 
@@ -64,6 +67,10 @@ Here's the real point of this episode. **Langdock is an example, not a recommend
 So the question this episode actually answers isn't *"should you use Langdock?"* It's: **whatever EU-compliant, Anthropic-compatible provider you pick — how do you point Claude Code at it?**
 
 The good news: because these gateways speak the **same API dialect as Anthropic**, the setup is identical no matter which one you choose. Claude Code thinks it's talking to Anthropic — it's actually talking to your chosen EU endpoint.
+
+**One option worth calling out separately: your own Azure-hosted Claude instance.** Microsoft Azure offers Claude models through Azure AI — you provision your own endpoint, your data stays in whichever Azure region you choose (including EU regions), and you own the whole setup. For a larger organization that's already deep in the Azure ecosystem, this is often the right long-term answer: more control, cleaner integration with existing governance, and no third-party sitting between you and the model. The tradeoff is that it takes real setup time — Azure subscriptions, resource provisioning, IAM, the works.
+
+**Langdock (and gateways like it) exist for a different moment: getting started.** If you want to evaluate whether Claude Code actually works for your team — before committing to Azure infrastructure — a gateway account is the fastest path. Sign up, generate an API key, set three environment variables, and you're testing in an afternoon. Once you've validated the workflow and made the business case, migrating to Azure is straightforward: you change one URL.
 
 > **Field note:** I'm not affiliated with any of these. Langdock just happens to be a clean, working example. The exact same technique applies to any Anthropic-compatible gateway.
 
@@ -89,10 +96,9 @@ ANTHROPIC_MODEL="claude-sonnet-4-6-default"
 Three things to understand before you touch a keyboard:
 
 1. **`ANTHROPIC_BASE_URL`** is the redirect. This one value is what keeps your data in the EU. Swap in a different provider's URL here and everything else stays the same — that's the whole point from the last section.
-2. **`ANTHROPIC_AUTH_TOKEN`** is *your gateway's* key, which you generate in the Langdock (or alternative) dashboard. It is **not** an `sk-ant-…` Anthropic key. Different system, different key.
+2. **`ANTHROPIC_AUTH_TOKEN`** is *your gateway's* key, which you generate in the Langdock (or alternative) dashboard. It is **not** an `sk-ant-…` Anthropic key. Different system, different key. You can create one under `Account Settings > API` [https://app.langdock.com/settings/workspace/products/api](https://app.langdock.com/settings/workspace/products/api)
+![Langdock dashboard: where to copy the API key and find model names](assets-inline/screenshot-02-langdock-dashboard.png)
 3. **`ANTHROPIC_MODEL`** has to match how the gateway names its models. Langdock uses names like `claude-sonnet-4-6-default`. If you get the model name wrong, this is the #1 cause of a failed first request — so check your provider's model list.
-
-[IMAGE: screenshot-02-langdock-dashboard.png — Langdock dashboard: where to copy the API key and find model names (redact the key)]
 
 That's the entire concept. The rest is just *where* you put these three variables on Windows versus macOS — and a couple of gotchas that'll save you twenty minutes.
 
@@ -114,12 +120,11 @@ claude --version
 On a corporate machine, check the network *before* touching config:
 
 ```powershell
+powershell
 Test-NetConnection api.langdock.com -Port 443
 ```
 
 Look for `TcpTestSucceeded : True`. If it fails, it's a firewall/proxy issue for IT to allowlist — not a Claude Code problem.
-
-[IMAGE: screenshot-06-test-netconnection.png — PowerShell Test-NetConnection showing TcpTestSucceeded : True]
 
 ### 3. Set the three System environment variables
 
@@ -134,8 +139,6 @@ ANTHROPIC_MODEL="claude-sonnet-4-6-default"
 Notes:
 - `ANTHROPIC_AUTH_TOKEN` is your **Langdock** key — NOT an Anthropic `sk-ant-…` key.
 - `ANTHROPIC_MODEL` must match how your gateway names the model. Wrong name = failed first request.
-
-[IMAGE: screenshot-05-windows-env-vars.png — Windows "Edit environment variables" dialog with all three variables set]
 
 ### 4. Verify the variables are set
 
@@ -161,17 +164,15 @@ Here's the one that catches everybody. The variables are picked up, but the VS C
 
 4. Save and **restart VS Code**.
 
-[IMAGE: screenshot-07-vscode-disable-login-prompt.png — VS Code settings.json with claudeCode.disableLoginPrompt]
-
 Done — Claude Code now runs against the Langdock EU endpoint.
 
 ---
 
 ## Setup: macOS
 
-No `winget` and no login-prompt issue on macOS. Two ways to set the variables.
+Two ways to set the variables.
 
-### Option A — Per-session (or `~/.zshrc` for permanent)
+### Option A — Per-session (or `~/.zshenv` for permanent)
 
 ```shell
 export LANGDOCK_API_KEY=your-langdock-key
@@ -183,7 +184,7 @@ export ANTHROPIC_MODEL="claude-sonnet-4-6-default"
 claude
 ```
 
-Add the `export` lines to `~/.zshrc` to make them permanent across terminal sessions.
+Add the `export` lines to `~/.zshenv` to make them permanent across terminal sessions.
 
 ### Option B — Project-scoped (recommended for VS Code)
 
@@ -201,8 +202,6 @@ Create `.claude/settings.local.json` in your project root:
 
 Use the `.local.json` variant (not `settings.json`) because it's meant to stay out of version control — exactly where you want a file containing an API key. Add it to `.gitignore`.
 
-[IMAGE: screenshot-08-macos-settings-local.png — .claude/settings.local.json open in VS Code]
-
 **Notes:**
 - `ANTHROPIC_AUTH_TOKEN` is your **Langdock** key — NOT an Anthropic `sk-ant-…` key.
 - `ANTHROPIC_MODEL` must match how your gateway names the model. Wrong name = failed first request.
@@ -215,8 +214,6 @@ Use the `.local.json` variant (not `settings.json`) because it's meant to stay o
 Here's the part I like. You don't have to remember any of this. Once Claude Code is running, you can have it write its own gateway config. Just ask:
 
 > *"Create a `.claude/settings.local.json` that routes Claude Code through the Langdock EU endpoint. Use the model `claude-sonnet-4-6-default` and leave a placeholder for my API key. Then add the file to `.gitignore`."*
-
-[IMAGE: screenshot-09-claude-configures-itself.png — Claude Code generating the settings file and updating .gitignore]
 
 And that's the meta-point for *any* provider you choose: drop your gateway's base URL and model name into a prompt like that, and Claude Code wires up its own EU-compliant configuration.
 
@@ -234,7 +231,9 @@ Honest field notes.
 
 **What tripped me up:**
 
-- **The VS Code login prompt (Windows).** This cost me the most time. Everything was configured correctly, but the extension kept showing the Anthropic login dialog and I assumed my variables weren't being read. They were. The fix is the single VS Code setting above (`claudeCode.disableLoginPrompt`), then restart VS Code. It's not obvious — the prompt gives no hint that your environment variables are already working.
+- **Additional cost.** This setup bypasses your normal Claude subscription entirely. A Claude Pro or Teams subscription gives you a usage budget — none of that applies here. You're paying the gateway (Langdock) for API calls, which are billed by token. For light use it's affordable, but if you're running Claude Code heavily all day, the meter is always running. Factor this into your cost model before rolling it out to a team.
+
+- **The VS Code login prompt.** This cost me the most time. Everything was configured correctly, but the extension kept showing the Anthropic login dialog and I assumed my variables weren't being read. They were. The fix is the single VS Code setting above (`claudeCode.disableLoginPrompt`), then restart VS Code. It's not obvious — the prompt gives no hint that your environment variables are already working.
 - **The model name.** My first request failed with an unhelpful error because I used an Anthropic-style model name instead of the gateway's name (`claude-sonnet-4-6-default`). Always check your provider's model list first.
 - **Corporate firewalls.** On a locked-down machine, port 443 to `api.langdock.com` was blocked until IT allowlisted it. Run the `Test-NetConnection` check *first* so you know whether you're debugging config or network.
 - **Key confusion.** I briefly pasted an Anthropic `sk-ant-…` key into `ANTHROPIC_AUTH_TOKEN`. Wrong key — it has to be the *gateway's* key.
@@ -273,7 +272,7 @@ ANTHROPIC_MODEL="claude-sonnet-4-6-default"                  # the gateway's mod
 | Platform | Where |
 |----------|-------|
 | Windows  | System environment variables + `"claudeCode.disableLoginPrompt": true` in VS Code user settings |
-| macOS    | `export` in `~/.zshrc`, or `.claude/settings.local.json` in the project |
+| macOS    | `export` in `~/.zshenv`, or `.claude/settings.local.json` in the project |
 
 **Send your security/legal team:** https://langdock.com/security
 **Find alternatives:** https://mega.fragroger.ai/ · https://european-alternatives.eu/
